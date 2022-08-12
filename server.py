@@ -17,7 +17,11 @@ class Server:
         self.catalog = {}
 
     def run(self):
-        self._ws_server = WebsocketServer(host="0.0.0.0", port=8765)
+        self._ws_server = WebsocketServer(
+            on_open=self.on_open,
+            host="0.0.0.0",
+            port=8765,
+        )
         self._ws_server.start()
         self.job_workers = [
             threading.Thread(target=self.check_catalog, daemon=True),
