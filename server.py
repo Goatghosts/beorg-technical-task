@@ -15,38 +15,48 @@ class Server:
         self._ws_server = None
         self.path = os.getcwd() if path is None else path
         self.catalog = {}
+        self.lock = threading.Event()
 
     def run(self):
-        self._ws_server = WebsocketServer(
-            on_open=self.on_open,
-            host="0.0.0.0",
-            port=8765,
-        )
-        self._ws_server.start()
         self.job_workers = [
             threading.Thread(target=self.check_catalog, daemon=True),
         ]
         for worker in self.job_workers:
             worker.start()
+        self._ws_server = WebsocketServer(
+            on_open=self.on_open,
+            host="0.0.0.0",
+            port=8765,
+        )
+        self.lock.wait()
+        self._ws_server.start()
 
     def check_catalog(self):
         while True:
             catalog = {}
             for root, dirs, files in os.walk(self.path):
-                cleaned_root = root.replace(os.getcwd(), "")
+                cleaned_root = root.replace(self.path, "")
                 for name in dirs:
                     path = os.path.join(cleaned_root, name).replace("\\", "/")
                     full_path = os.path.join(root, name)
+                    try:
+                        timestamp = os.path.getmtime(full_path)
+                    except:
+                        timestamp = 0
                     catalog[path] = {
-                        "timestamp": os.path.getmtime(full_path),
+                        "timestamp": timestamp,
                         "type": "Directory",
                         "full_path": full_path,
                     }
                 for name in files:
                     path = os.path.join(cleaned_root, name).replace("\\", "/")
                     full_path = os.path.join(root, name)
+                    try:
+                        timestamp = os.path.getmtime(full_path)
+                    except:
+                        timestamp = 0
                     catalog[path] = {
-                        "timestamp": os.path.getmtime(full_path),
+                        "timestamp": timestamp,
                         "type": "File",
                         "full_path": full_path,
                     }
@@ -75,6 +85,7 @@ class Server:
             if update:
                 self._ws_server.send_all(json.dumps({"type": "diff", "data": diff}))
                 self.catalog = catalog
+                self.lock.set()
 
     def on_open(self):
         return json.dumps({"type": "init", "data": self.catalog})

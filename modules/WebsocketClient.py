@@ -4,13 +4,14 @@ import logging
 
 
 class WebsocketClient(threading.Thread):
-    def __init__(self, url="0.0.0.0", on_open=None, on_message=None, on_close=None):
+    def __init__(self, url="0.0.0.0", on_open=None, on_message=None, on_close=None, on_error=None):
         super().__init__()
         self.daemon = True
         self._is_connected = False
         self.on_open_cb = on_open
         self.on_message_cb = on_message
         self.on_close_cb = on_close
+        self.on_error_cb = on_error
         logging.info(f"Connect to {url}")
         self._ws = websocket.WebSocketApp(
             url=url,
@@ -40,6 +41,8 @@ class WebsocketClient(threading.Thread):
     def on_error(self, ws, error):
         logging.error("websocket error")
         logging.error(error)
+        if self.on_error_cb:
+            self.on_error_cb()
 
     def on_close(self, ws, close_status_code, close_msg):
         logging.info("websocket closed")

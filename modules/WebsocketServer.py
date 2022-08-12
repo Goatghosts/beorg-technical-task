@@ -8,6 +8,7 @@ class WebsocketServer(threading.Thread):
     def __init__(self, on_open=None, on_message=None, host="0.0.0.0", port=8765):
         super().__init__()
         self.daemon = True
+        self.started = False
         self.on_open_cb = on_open
         self.on_message_cb = on_message
         self._host = host
@@ -16,6 +17,7 @@ class WebsocketServer(threading.Thread):
         self._loop = asyncio.new_event_loop()
 
     def run(self):
+        self.started = True
         asyncio.set_event_loop(self._loop)
         start_server = websockets.serve(
             self.handler, self._host, self._port, ping_interval=120, ping_timeout=120, max_size=None
@@ -39,7 +41,8 @@ class WebsocketServer(threading.Thread):
         self._loop.call_soon_threadsafe(self._loop.stop)
 
     def send_all(self, message: str):
-        websockets.broadcast(self.connected, message)
+        if self.started:
+            websockets.broadcast(self.connected, message)
 
     async def handler(self, websocket, _):
         self.register(websocket)
