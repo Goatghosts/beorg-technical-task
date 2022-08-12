@@ -10,3 +10,32 @@
 Клиент и сервер работают независимо
 
 Код может запускаться в докере или просто консоли. Клиентское приложение может быть страничкой в браузере.
+
+---
+
+### server.py принимает на входе аргумент path, содержащий в себе абсолютный путь к целевому каталогу. Если path не будет передан, то сервер будет просматривать содержимое каталога самого репозитория!!!
+
+Клиентов, очевидно, может быть сколько угодно. 
+
+---
+
+## Windows:
+```
+pip install -r requirements.txt
+```
+```
+python server.py --path C:\Github\beorg-technical-task\modules
+```
+```
+python client.py
+```
+## Linux / WSL:
+```
+pip3 install -r requirements.txt
+```
+```
+python3 server.py --path /mnt/c/Github/beorg-technical-task/modules
+```
+```
+python3 client.py
+```

@@ -75,7 +75,7 @@ class Server:
                 update = True
                 logging.info(f"{self.catalog[item]['type']} deleted: {item}")
             for item in new_catalog.intersection(old_catalog):
-                if self.catalog[item]["timestamp"] != catalog[item]["timestamp"]:
+                if self.catalog[item]["timestamp"] < catalog[item]["timestamp"]:
                     diff["updated"][item] = catalog[item]["timestamp"]
                     update = True
                     logging.info(f"{catalog[item]['type']} updated: {item}")
