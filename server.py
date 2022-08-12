@@ -49,35 +49,41 @@ class Server:
 
             old_catalog = set(self.catalog.keys())
             new_catalog = set(catalog.keys())
-            diffs = {
+            diff = {
                 "new": {},
                 "deleted": [],
                 "updated": {},
             }
             update = False
             for item in new_catalog - old_catalog:
-                diffs["new"][item] = catalog[item]
+                diff["new"][item] = catalog[item]
                 update = True
                 logging.info(f"{catalog[item]['type']} created: {item}")
             for item in old_catalog - new_catalog:
-                diffs["deleted"].append(item)
+                diff["deleted"].append(item)
                 update = True
                 logging.info(f"{self.catalog[item]['type']} deleted: {item}")
             for item in new_catalog.intersection(old_catalog):
                 if self.catalog[item]["timestamp"] != catalog[item]["timestamp"]:
-                    diffs["updated"][item] = catalog[item]["timestamp"]
+                    diff["updated"][item] = catalog[item]["timestamp"]
                     update = True
                     logging.info(f"{catalog[item]['type']} updated: {item}")
             if update:
-                print(json.dumps(diffs, indent=2))
-            self.catalog = catalog
+                self._ws_server.send_all(json.dumps({"type": "diff", "data": diff}))
+                self.catalog = catalog
+
+    def on_open(self):
+        return json.dumps({"type": "init", "data": self.catalog})
 
 
 if __name__ == "__main__":
     argument_parser = ArgumentParser()
     argument_parser.add_argument("-p", "--path")
     args = argument_parser.parse_args()
-    server = Server(args.path)
-    server.run()
-    while True:
-        time.sleep(1)
+    if args.path is None or os.path.exists(args.path):
+        server = Server(args.path)
+        server.run()
+        while True:
+            time.sleep(1)
+    else:
+        logging.error("Incorrect path. Shutdown.")

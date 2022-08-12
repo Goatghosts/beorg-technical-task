@@ -38,8 +38,8 @@ class WebsocketServer(threading.Thread):
         logging.warning("Shutdown ws server...")
         self._loop.call_soon_threadsafe(self._loop.stop)
 
-    def send_all(self, group: str, message: str):
-        websockets.broadcast(self._groups[group], message)
+    def send_all(self, message: str):
+        websockets.broadcast(self.connected, message)
 
     async def handler(self, websocket, _):
         self.register(websocket)
