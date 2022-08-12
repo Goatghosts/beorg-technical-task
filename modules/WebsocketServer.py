@@ -20,7 +20,7 @@ class WebsocketServer(threading.Thread):
         self.started = True
         asyncio.set_event_loop(self._loop)
         start_server = websockets.serve(
-            self.handler, self._host, self._port, ping_interval=120, ping_timeout=120, max_size=None
+            self.handler, self._host, self._port, ping_interval=30, ping_timeout=30, max_size=None
         )
         asyncio.get_event_loop().run_until_complete(start_server)
         asyncio.get_event_loop().run_forever()

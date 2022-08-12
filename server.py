@@ -18,11 +18,8 @@ class Server:
         self.lock = threading.Event()
 
     def run(self):
-        self.job_workers = [
-            threading.Thread(target=self.check_catalog, daemon=True),
-        ]
-        for worker in self.job_workers:
-            worker.start()
+        self.worker = threading.Thread(target=self.check_catalog, daemon=True)
+        self.worker.start()
         self._ws_server = WebsocketServer(
             on_open=self.on_open,
             host="0.0.0.0",
