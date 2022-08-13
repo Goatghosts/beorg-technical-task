@@ -4,7 +4,7 @@ import logging
 
 
 class WebsocketClient(threading.Thread):
-    def __init__(self, url="0.0.0.0", on_open=None, on_message=None, on_close=None, on_error=None):
+    def __init__(self, url="ws://localhost:8765", on_open=None, on_message=None, on_close=None, on_error=None):
         super().__init__()
         self.daemon = True
         self._is_connected = False
